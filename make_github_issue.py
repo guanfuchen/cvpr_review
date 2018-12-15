@@ -70,15 +70,15 @@ if __name__ == '__main__':
     # issue_title = 'Graph-Structured Representations for Visual Question Answering'
     # issue_body = '|id|title|author|year|\n|---|---|---|---|\n|1|Graph-Structured Representations for Visual Question Answering|Teney, Damien and Liu, Lingqiao and van den Hengel, Anton|2017|'
 
-    cvpr_file_name = 'cvpr{}/CVPR{}.md'.format(args.year, args.year)
+    cvpr_file_name = 'cvpr{}/cvpr{}.md'.format(args.year, args.year)
     if not os.path.exists(cvpr_file_name):
         print('misssing file {}'.format(cvpr_file_name))
         exit(0)
 
     cvpr_file_fp = open(cvpr_file_name, 'rb')
-    cvpr_file_content = cvpr_file_fp.readlines()[2+args.start_id:] # for content
+    cvpr_file_content = cvpr_file_fp.readlines()[2:] # for content
     # print('cvpr_file_content:', cvpr_file_content)
-    count_id = 0
+    count_id = args.start_id
     # for cvpr_file_content_item_id, cvpr_file_content_item in enumerate(cvpr_file_content):
     print(len(cvpr_file_content))
     while count_id<len(cvpr_file_content):
@@ -99,6 +99,7 @@ if __name__ == '__main__':
         if not issue_flag:
             print('end_id:', count_id)
             time.sleep(4)
+            break
         else:
             count_id += 1
         # break
