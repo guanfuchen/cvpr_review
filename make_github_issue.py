@@ -5,6 +5,7 @@ import getpass
 import json
 import requests
 import os
+import time
 
 
 def make_github_issue(title, body=None, assignee=None, milestone=None, labels=None, USERNAME = 'CHANGEME', PASSWORD = 'CHANGEME', REPO_OWNER = 'CHANGEME', REPO_NAME = 'CHANGEME'):
@@ -32,24 +33,16 @@ def make_github_issue(title, body=None, assignee=None, milestone=None, labels=No
         'body': body,
         'assignee': assignee,
         'milestone': milestone,
-        'labels': labels
+        'labels': labels,
     }
-    r = session.get(url)
-    r_content = r.content
-
-    # simply tell whether the issue
-    # print('r_content:', r_content)
-    if '"title":"{}"'.format(title) in r_content:
-        print('issue {} has been created'.format(title))
+    r = session.post(url, json.dumps(issue))
+    if r.status_code == 201:
+        print 'Successfully created Issue "%s"' % title
+        return True
     else:
-        pass
-        # Add the issue to our repository
-        r = session.post(url, json.dumps(issue))
-        if r.status_code == 201:
-            print 'Successfully created Issue "%s"' % title
-        else:
-            print 'Could not create Issue "%s"' % title
-            print 'Response:', r.content
+        print 'Could not create Issue "%s"' % title
+        print 'Response:', r.content
+        return False
 
 class Password(argparse.Action):
     def __call__(self, parser, namespace, values, option_string):
@@ -64,6 +57,7 @@ if __name__ == '__main__':
     parser.add_argument('--repo_owner', type=str, default='guanfuchen', help='github repo owner [ REPO_OWNER ]')
     parser.add_argument('--repo_name', type=str, default='cvpr_review', help='github  repo name [ REPO_NAME ]')
     parser.add_argument('--year', type=str, default='2017', help='cvpr year [ 2015 2016 2017 2018 ]')
+    parser.add_argument('--start_id', type=int, default=0, help='cvpr paper start issue id [ 1 ]')
     args = parser.parse_args()
 
     if args.password is None:
@@ -82,9 +76,13 @@ if __name__ == '__main__':
         exit(0)
 
     cvpr_file_fp = open(cvpr_file_name, 'rb')
-    cvpr_file_content = cvpr_file_fp.readlines()[2:] # for content
+    cvpr_file_content = cvpr_file_fp.readlines()[2+args.start_id:] # for content
     # print('cvpr_file_content:', cvpr_file_content)
-    for cvpr_file_content_item in cvpr_file_content:
+    count_id = 0
+    # for cvpr_file_content_item_id, cvpr_file_content_item in enumerate(cvpr_file_content):
+    print(len(cvpr_file_content))
+    while count_id<len(cvpr_file_content):
+        cvpr_file_content_item = cvpr_file_content[count_id]
         # print(cvpr_file_content_item)
         cvpr_file_content_item_list = cvpr_file_content_item.split('|')
         # print(cvpr_file_content_item_list)
@@ -96,6 +94,13 @@ if __name__ == '__main__':
         issue_title = title_str_real
         issue_body = '|id|title|author|year|\n|---|---|---|---|\n{}'.format(cvpr_file_content_item)
         # print(issue_body)
-        make_github_issue(title=issue_title, body=issue_body, assignee=None, milestone=None, labels=['cvpr{}'.format(args.year)], USERNAME=args.username, PASSWORD=args.password, REPO_OWNER=args.repo_owner, REPO_NAME=args.repo_name)
+        issue_flag = make_github_issue(title=issue_title, body=issue_body, assignee=None, milestone=None, labels=['cvpr{}'.format(args.year)], USERNAME=args.username, PASSWORD=args.password, REPO_OWNER=args.repo_owner, REPO_NAME=args.repo_name)
+        time.sleep(2)
+        if not issue_flag:
+            print('end_id:', count_id)
+            time.sleep(4)
+        else:
+            count_id += 1
         # break
+
     cvpr_file_fp.close()
