@@ -51,7 +51,7 @@ class Password(argparse.Action):
         setattr(namespace, self.dest, values)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='cvpr crawl setting')
+    parser = argparse.ArgumentParser(description='github issue setting')
     parser.add_argument('--username', type=str, default='guanfuchen@zju.edu.cn', help='github username [ USERNAME ]')
     parser.add_argument('--password', action=Password, nargs='?', help='Enter your github password [ PASSWORD ]')
     parser.add_argument('--repo_owner', type=str, default='guanfuchen', help='github repo owner [ REPO_OWNER ]')
